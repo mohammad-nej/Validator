@@ -21,12 +21,7 @@ public extension View {
         return modifier(ValidationVM(closures))
     }
     
-    ///Get error message(s) produced by validators for this specific view.
-    /// - Note: You have to run `validate()` function in-order to get error messages
-    /// - Warning: this will crash if you forget to set ViewIdentifier for your view
-    func validationErrors(_ messages : Binding<[String]>) -> some View {
-        return modifier(ValidationErrors(messages))
-    }
+
     ///Detect where this view is valid or not
     /// - Note:  You have to run `validate()` function in-order to get error messages
     /// - Warning: this will crash if you forget to set ViewIdentifier for your view

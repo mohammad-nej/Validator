@@ -7,9 +7,16 @@
 
 ///Holds the result of multiple validations.
 public struct ValidationResult : Equatable{
-    public init(){}
+    public init(){
+        viewId = nil
+    }
+    public init(for viewId : ViewIdentifier?){
+        self.viewId = viewId
+    }
     var results : [Validation] = []
     
+    ///Indicate whether this result, is for a specific viewId for not!
+    let viewId : ViewIdentifier?
     
     public var errorMessages : [String] {
         return results.compactMap({ validation in

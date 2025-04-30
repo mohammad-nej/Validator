@@ -8,50 +8,57 @@
 import SwiftUI
 
 
- struct ValidationVM : ViewModifier {
+struct ValidationVM : ViewModifier {
     
     @Environment(\.validationManager) var validationManager
     @Environment(ViewIdentifier.self) private var viewIdentifier
     
     let closure : (() -> String)?
     let closures : [() -> String]?
-  
-     init(_ closure : @escaping () -> String){
+ 
+    
+    init(_ closure : @escaping () -> String){
         self.closure = closure
         self.closures = nil
         
     }
-     init(_ closures : [() -> String]){
+    init(_ closures : [() -> String]){
         self.closure = nil
         self.closures = closures
     }
     public func body(content: Content) -> some View {
-   
-           content
-               .onAppear{
-                   guard let validationManager else {
-                       logger.error( "ValidationManager not found. use `.validationManager()` modifier on this view hierarchy to set a ValidationManager ")
-                       return
-                   }
-                   if let closure{
-                       //Creating a single validator
-                       let createdOne = Validation(closure: closure)
-                       createdOne.relatedView = viewIdentifier.id
-                   
-                       validationManager.validators.append(createdOne)
-                   }else if let closures{
+        
+        content
+            .onAppear{
+                logger.debug("Inserting a new Validator...")
+                guard let validationManager else {
+                    logger.error( "ValidationManager not found. use `.validationManager()` modifier on this view hierarchy to set a ValidationManager ")
+                    return
+                }
+                if let closure{
+                    //Creating a single validator
+                    logger.debug("Validation created for view : \(viewIdentifier.id.uuidString)")
+                    let createdOne = Validation(closure: closure)
+                    createdOne.relatedView = viewIdentifier.id
                     
-                       guard closures.count > 0 else { return }
-                       logger.debug("Creating \(closures.count) validators...")
-                       validationManager.validators.append(contentsOf: closures.map{
-                           let validation = Validation(closure: $0)
-                           validation.relatedView = viewIdentifier.id
-                           return validation
-                       })
-                   }
-               }
-       }
-   
-//    }
+                    validationManager.validators.insert(createdOne)
+                }else if let closures{
+                    
+                    guard closures.count > 0 else { return }
+                    logger.debug("Creating \(closures.count) validators...")
+                    let validators = closures.map{
+                        let validation = Validation(closure: $0)
+                        validation.relatedView = viewIdentifier.id
+                        return validation
+                    }
+                    validators.forEach { validator in
+                        validationManager.validators.insert(validator)
+                    }
+                    logger.debug("\(closures.count) Validations(s) created for view : \(viewIdentifier.id.uuidString)")
+                }
+            }
+    }
+    
+    //    }
     
 }

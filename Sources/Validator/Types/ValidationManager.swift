@@ -11,10 +11,16 @@ public final class ValidationManager {
     
     public init(){}
     ///All validators on this manager
-    var  validators : [Validation] = []
+    var  validators : Set<Validation> = []
     
     ///result of the latest validation check done by the manager
     public var latesResults : ValidationResult?
+    
+    
+    ///Reset the result of previous validations
+    public func reset(){
+        latesResults = nil
+    }
     
     ///All errorMessages produced by the validation
     public var errorsMessages : [String] {
@@ -25,13 +31,19 @@ public final class ValidationManager {
     /// - Parameter id: the unique of your view
     /// - Returns: Validation result including error message(s) and the final result
     public func validate(view id : ViewIdentifier) -> ValidationResult {
-        var results = ValidationResult()
-        for validator in validators where validator.relatedView == id {
+        var results = ValidationResult(for:id)
+        let validatorsOnView = validators.filter { validator in
+            validator.relatedView == id
+        }
+        logger.debug("Validating for view : \(id.id.uuidString)...")
+        logger.debug("\(validatorsOnView.count) set up for this view...")
+        for validator in validatorsOnView {
             if validator.validate() == false {
                 results.results.append(validator)
             }
         }
         latesResults = results
+        logger.debug("Validation for view: \(id.id) finished. \n result : \(results.errorMessages)")
         return results
     }
     
